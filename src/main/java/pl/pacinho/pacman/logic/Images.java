@@ -58,4 +58,10 @@ public class Images {
     public static ImageIcon getMonster() {
         return monsterA;
     }
+
+        private static BufferedImage life = load("Pacman.png");
+
+    public static BufferedImage getLifeImage() {
+        return life;
+    }
 }

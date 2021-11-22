@@ -7,6 +7,7 @@ import pl.pacinho.pacman.view.Board;
 import pl.pacinho.pacman.view.cells.*;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ public class BoardController {
     private int point = 0;
     private int maxPoint = 0;
 
+    private int originalPlayerPosition = 0;
     private boolean finishCell = false;
     private int finishCellIdx = 0;
 
@@ -37,6 +39,8 @@ public class BoardController {
 
     private Bonus bonus;
 
+    private int life = 3;
+
     public BoardController(Board board) {
         this.board = board;
         boardPanel = board.getBoardPanel();
@@ -47,6 +51,15 @@ public class BoardController {
 
         bonus = new Bonus();
         monsterCount = board.getLevelData().getMonsterCount();
+        setLifeCells();
+    }
+
+    private void setLifeCells() {
+        board.getLifePanel().removeAll();
+        for (int i = 0; i < life; i++) {
+            board.getLifePanel().add(new LifeCell());
+        }
+        refresh();
     }
 
     public void initLevelView() {
@@ -61,6 +74,7 @@ public class BoardController {
                 boardPanel.add(cellInstance);
                 if (cellInstance instanceof PlayerCell) {
                     playerCell = (PlayerCell) cellInstance;
+                    originalPlayerPosition = playerCell.getIdx();
                 } else if (cellInstance instanceof WallCell) {
                     wallList.add(idx);
                 } else if (cellInstance instanceof PointCell) {
@@ -81,6 +95,7 @@ public class BoardController {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             if (!board.getTimer().isRunning()) {
                 board.getTimer().start();
+                end = false;
             } else {
                 board.getTimer().stop();
             }
@@ -246,9 +261,7 @@ public class BoardController {
             refresh();
 
             board.getTimer().stop();
-            JOptionPane.showMessageDialog(board, "Game Over2 !");
-            end = true;
-
+            checkLife();
             return null;
         } else if (bonus.isInUse() && bonus.getBonusType() == BonusType.MONSTER_KILL && nextCell instanceof PlayerCell) {
             boardPanel.remove(nextPosition);
@@ -273,6 +286,21 @@ public class BoardController {
         return null;
     }
 
+    private void checkLife() {
+        life--;
+        setLifeCells();
+
+        if (life == 0) {
+            JOptionPane.showMessageDialog(board, "Game Over2 !");
+            end = true;
+        } else {
+            boardPanel.remove(originalPlayerPosition);
+            playerCell = new PlayerCell();
+            playerCell.setIdx(originalPlayerPosition);
+            boardPanel.add(playerCell, originalPlayerPosition);
+        }
+    }
+
     private void replaceCells(int nextPosition) {
         Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
 
@@ -290,11 +318,9 @@ public class BoardController {
                 || (bonus.getBonusType() != BonusType.MONSTER_KILL))) {
             boardPanel.remove(nextPosition);
             boardPanel.add(new MonsterCell(0), nextPosition);
-            refresh();
-            board.getTimer().stop();
 
-            JOptionPane.showMessageDialog(board, "Game Over1 !");
-            end = true;
+            board.getTimer().stop();
+            checkLife();
             return;
         } else if (bonus.isInUse() && bonus.getBonusType() == BonusType.MONSTER_KILL && nextCell instanceof MonsterCell) {
             boardPanel.remove(nextPosition);

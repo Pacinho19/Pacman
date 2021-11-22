@@ -31,15 +31,14 @@ public class PlayerCell extends Cell {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         Dimension d = getSize();
-        if (border) {
+        if(border) {
             g2.setStroke(new BasicStroke(3));
             g.setColor(Color.RED);
-            g.fillRect(0, 0, d.width, d.height);
         }else{
             g.setColor(Color.WHITE);
-            g.fillRect(0, 0, d.width, d.height);
-
         }
+
+        g.fillRect(0, 0, d.width, d.height);
         g.drawImage(image.getImage(),
                 (int) (d.width * 0.1),
                 (int) (d.height * 0.1),

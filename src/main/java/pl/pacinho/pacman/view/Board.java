@@ -1,5 +1,6 @@
 package pl.pacinho.pacman.view;
 
+import javafx.scene.shape.Box;
 import javafx.util.Pair;
 import lombok.Getter;
 import pl.pacinho.pacman.controller.BoardController;
@@ -19,26 +20,12 @@ public class Board extends JFrame implements ActionListener {
     private int rows;
     @Getter
     private int cols;
-
     @Getter
     private LevelData levelData;
-
-    @Getter
-    private JPanel boardPanel;
-    private JButton restartJB;
-    private JPanel topPanel;
-
-    @Getter
-    private JLabel bonusTimeJL;
-
     @Getter
     private int level;
-
     @Getter
     private Timer timer;
-
-    private Board self;
-
     private BoardController boardController;
 
     public Board(int level) {
@@ -80,6 +67,9 @@ public class Board extends JFrame implements ActionListener {
         bonusTimeJL = new JLabel();
         bonusTimeJL.setFont(new Font("Serif", Font.PLAIN, 20));
         bonusTimeJL.setVisible(false);
+
+        lifePanel = new JPanel();
+        lifePanel.setLayout(new BoxLayout(lifePanel, BoxLayout.X_AXIS));
     }
 
     private void initView() {
@@ -90,7 +80,7 @@ public class Board extends JFrame implements ActionListener {
         main.add(restartJB, BorderLayout.SOUTH);
 
         topPanel.add(bonusTimeJL, BorderLayout.CENTER);
-        topPanel.add(new JLabel("Test"), BorderLayout.EAST);
+        topPanel.add(lifePanel, BorderLayout.WEST);
         main.add(topPanel, BorderLayout.NORTH);
     }
 
@@ -113,4 +103,14 @@ public class Board extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         boardController.gameTick();
     }
+
+    @Getter
+    private JPanel boardPanel;
+    private JButton restartJB;
+    private JPanel topPanel;
+    @Getter
+    private JPanel lifePanel;
+    @Getter
+    private JLabel bonusTimeJL;
+    private Board self;
 }
