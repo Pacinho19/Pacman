@@ -11,12 +11,9 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 @Getter
-
 public class PlayerCell extends Cell {
 
     private PlayerDirection direction;
-    @Setter
-    private int position;
     private ImageIcon image;
 
     public PlayerCell() {

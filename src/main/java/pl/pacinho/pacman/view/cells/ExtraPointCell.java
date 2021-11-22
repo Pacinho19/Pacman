@@ -1,5 +1,6 @@
 package pl.pacinho.pacman.view.cells;
 
+import lombok.Getter;
 import pl.pacinho.pacman.model.CellType;
 
 import javax.swing.*;
@@ -7,7 +8,11 @@ import java.awt.*;
 
 public class ExtraPointCell extends PointCell {
 
-    public ExtraPointCell(int idx) {
+    @Getter
+    private boolean defaultPoint;
+
+    public ExtraPointCell(int idx, boolean b) {
+        defaultPoint=b;
         this.idx=idx;
         this.cellType = CellType.POINT;
         init();

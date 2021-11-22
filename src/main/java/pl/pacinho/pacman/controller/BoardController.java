@@ -29,6 +29,7 @@ public class BoardController {
     private int maxPoint = 0;
 
     private boolean finishCell = false;
+    private int finishCellIdx = 0;
 
     private List<Cell> pointsMap;
 
@@ -38,12 +39,14 @@ public class BoardController {
 
     private int bonusDelay = 30;
     private int bonusTime = 20;
+    private ExtraPointCell extraPointCell;
 
     private int bonusTick = 0;
     private int tickWithoutBonus = 0;
 
     private boolean bonus = false;
     private boolean bonusUse = false;
+
 
     public BoardController(Board board) {
         this.board = board;
@@ -66,7 +69,6 @@ public class BoardController {
                 boardPanel.add(cellInstance);
                 if (cellInstance instanceof PlayerCell) {
                     playerCell = (PlayerCell) cellInstance;
-                    playerCell.setPosition(idx);
                 } else if (cellInstance instanceof WallCell) {
                     wallList.add(idx);
                 } else if (cellInstance instanceof PointCell) {
@@ -95,7 +97,9 @@ public class BoardController {
     }
 
     public void gameTick() {
-        if(!bonusUse) {
+        checkBonus();
+
+        if (!bonusUse) {
             moveMonsters();
             refresh();
         }
@@ -107,19 +111,22 @@ public class BoardController {
         if (playerCell.getDirection() == PlayerDirection.NONE) {
             return;
         } else if (playerCell.getDirection() == PlayerDirection.RIGHT) {
-            int nextPosition = playerCell.getPosition() + 1;
+            int nextPosition = playerCell.getIdx() + 1;
             replaceCells(nextPosition);
         } else if (playerCell.getDirection() == PlayerDirection.LEFT) {
-            int nextPosition = playerCell.getPosition() - 1;
+            int nextPosition = playerCell.getIdx() - 1;
             replaceCells(nextPosition);
         } else if (playerCell.getDirection() == PlayerDirection.DOWN) {
-            int nextPosition = playerCell.getPosition() + board.getCols();
+            int nextPosition = playerCell.getIdx() + board.getCols();
             replaceCells(nextPosition);
         } else if (playerCell.getDirection() == PlayerDirection.UP) {
-            int nextPosition = playerCell.getPosition() - board.getCols();
+            int nextPosition = playerCell.getIdx() - board.getCols();
             replaceCells(nextPosition);
         }
 
+    }
+
+    private void checkBonus() {
         if (!bonus) {
             tickWithoutBonus++;
             if (tickWithoutBonus >= bonusDelay) {
@@ -131,10 +138,11 @@ public class BoardController {
         if (bonusUse) {
             bonusTick++;
             if (bonusTick >= bonusTime) {
-                bonusTick=0;
+                bonusTick = 0;
                 bonus = false;
                 bonusUse = false;
-                tickWithoutBonus=0;
+                tickWithoutBonus = 0;
+                extraPointCell = null;
             }
         }
     }
@@ -142,16 +150,19 @@ public class BoardController {
     private void addBonus() {
         List<Cell> pointCell = Arrays.stream(boardPanel.getComponents())
                 .map(c -> (Cell) c)
-                .filter(c -> c.getCellType() == CellType.EMPTY)
+                .filter(c -> c.getCellType() == CellType.POINT
+                        || c.getCellType() == CellType.EMPTY)
                 .collect(Collectors.toList());
 
         int extraPointIdx = RandomUtils.getInt(0, pointCell.size() - 1);
 
-        Cell cell = (pointCell.get(extraPointIdx));
-        boardPanel.remove(cell.getIdx());
-        boardPanel.add(new ExtraPointCell(cell.getIdx()), cell.getIdx());
-        pointsMap.add(cell);
 
+        Cell cell = (pointCell.get(extraPointIdx));
+        ExtraPointCell extraPointCell = new ExtraPointCell(cell.getIdx(), cell instanceof PointCell);
+        boardPanel.remove(cell.getIdx());
+        boardPanel.add(extraPointCell, cell.getIdx());
+
+        this.extraPointCell = extraPointCell;
         refresh();
     }
 
@@ -195,13 +206,17 @@ public class BoardController {
             PointCell pointCell = new PointCell();
             pointCell.setIdx(monsterCell.getIdx());
             boardPanel.add(pointCell, monsterCell.getIdx());
+        } else if (monsterCell.getIdx() == finishCellIdx) {
+            boardPanel.add(new FinishCell(), monsterCell.getIdx());
+        } else if (extraPointCell!=null && monsterCell.getIdx() == extraPointCell.getIdx()) {
+            boardPanel.add(extraPointCell, monsterCell.getIdx());
         } else {
             boardPanel.add(new EmptyCell(monsterCell.getIdx()), monsterCell.getIdx());
         }
 
         if (nextCell instanceof PlayerCell) {
 
-            int position = playerCell.getPosition();
+            int position = playerCell.getIdx();
             boardPanel.remove(position);
             boardPanel.add(monsterCell, position);
             monsterCell.setIdx(position);
@@ -228,8 +243,8 @@ public class BoardController {
 
         checkPoint(nextPosition);
 
-        boardPanel.remove(playerCell.getPosition());
-        boardPanel.add(new EmptyCell(nextCell.getIdx()), playerCell.getPosition());
+        boardPanel.remove(playerCell.getIdx());
+        boardPanel.add(new EmptyCell(nextCell.getIdx()), playerCell.getIdx());
 
         if (nextCell instanceof MonsterCell) {
             boardPanel.remove(nextPosition);
@@ -245,7 +260,7 @@ public class BoardController {
 
         boardPanel.remove(nextPosition);
         boardPanel.add(playerCell, nextPosition);
-        playerCell.setPosition(nextPosition);
+        playerCell.setIdx(nextPosition);
 
         refresh();
 
@@ -259,21 +274,29 @@ public class BoardController {
     private void checkPoint(int nextPosition) {
         Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
         if (nextCell instanceof PointCell) {
-            point++;
-            Cell cell = pointsMap.stream()
-                    .filter(pm -> pm.getIdx() == nextCell.getIdx())
-                    .findFirst()
-                    .get();
-            pointsMap.remove(cell);
+            boolean calcPoint = true;
+            if (nextCell instanceof ExtraPointCell) {
+                ExtraPointCell extraPointCell = (ExtraPointCell) nextCell;
+                calcPoint = extraPointCell.isDefaultPoint();
+            }
 
-            if (point == maxPoint
-                    && !finishCell) {
-                setRandomFinishCell();
-                finishCell = true;
+            if (calcPoint) {
+                point++;
+                Cell cell = pointsMap.stream()
+                        .filter(pm -> pm.getIdx() == nextCell.getIdx())
+                        .findFirst()
+                        .get();
+                pointsMap.remove(cell);
+
+                if (point == maxPoint
+                        && !finishCell) {
+                    setRandomFinishCell();
+                    finishCell = true;
+                }
             }
         }
 
-        if(nextCell instanceof  ExtraPointCell){
+        if (nextCell instanceof ExtraPointCell) {
             bonusUse = true;
         }
     }
@@ -289,6 +312,8 @@ public class BoardController {
 
         boardPanel.remove(cell.getIdx());
         boardPanel.add(new FinishCell(), cell.getIdx());
+
+        this.finishCellIdx = cell.getIdx();
     }
 
     private void locateMonster() {
@@ -305,7 +330,6 @@ public class BoardController {
         boardPanel.add(monsterCell, cell.getIdx());
         monsters.add(monsterCell);
     }
-
 
     private void refresh() {
         board.repaint();
