@@ -100,7 +100,7 @@ public class BoardController {
         checkPoint(nextPosition);
 
         boardPanel.remove(playerCell.getPosition());
-        boardPanel.add(new EmptyCell(), playerCell.getPosition());
+        boardPanel.add(new EmptyCell(nextCell.getIdx()), playerCell.getPosition());
 
         boardPanel.remove(nextPosition);
         boardPanel.add(playerCell, nextPosition);
@@ -118,7 +118,6 @@ public class BoardController {
         Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
         if (nextCell instanceof PointCell) {
             point++;
-            System.out.println(point);
         }
 
         if (point == maxPoint
