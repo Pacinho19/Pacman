@@ -24,6 +24,7 @@ public class MonsterCell extends Cell {
         this.cellType = CellType.MONSTER;
         this.image = Images.getMonster();
         this.monsterDirection=MonsterDirection.NONE;
+        this.setDoubleBuffered(true);
         init();
     }
 

@@ -9,23 +9,20 @@ public class PointCell extends Cell {
 
     public PointCell() {
         this.cellType = CellType.POINT;
-        init();
-    }
-
-    private void init() {
-        this.setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.WHITE));
-        this.setBackground(Color.WHITE);
+        this.setDoubleBuffered(true);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        int oHeight = (int) (getHeight() * 0.1);
-        int oWidth = (int) (getWidth() * 0.1);
-        int x = (getHeight() - oHeight) / 2;
-        int y = (getWidth() - oWidth) / 2;
-        g.setColor(Color.PINK);
-        g.fillRect(x, y, oHeight, oWidth);
+        this.setBorder(BorderFactory.createMatteBorder(
+                (int) (this.getHeight() * 0.35),
+                (int) (this.getWidth() * 0.35),
+                (int) (this.getHeight() * 0.35),
+                (int) (this.getWidth() * 0.35),
+                Color.WHITE));
+        this.setBackground(Color.PINK);
+
     }
 
 

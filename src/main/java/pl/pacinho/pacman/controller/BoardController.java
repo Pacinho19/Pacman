@@ -202,14 +202,14 @@ public class BoardController {
             return;
         }
         boardPanel.remove(monsterCell.getIdx());
-        if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(monsterCell.getIdx())) {
+        if (extraPointCell != null && monsterCell.getIdx() == extraPointCell.getIdx()) {
+            boardPanel.add(extraPointCell, monsterCell.getIdx());
+        } else if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(monsterCell.getIdx())) {
             PointCell pointCell = new PointCell();
             pointCell.setIdx(monsterCell.getIdx());
             boardPanel.add(pointCell, monsterCell.getIdx());
         } else if (monsterCell.getIdx() == finishCellIdx) {
             boardPanel.add(new FinishCell(), monsterCell.getIdx());
-        } else if (extraPointCell!=null && monsterCell.getIdx() == extraPointCell.getIdx()) {
-            boardPanel.add(extraPointCell, monsterCell.getIdx());
         } else {
             boardPanel.add(new EmptyCell(monsterCell.getIdx()), monsterCell.getIdx());
         }
@@ -268,6 +268,8 @@ public class BoardController {
             board.getTimer().stop();
             playerCell.setDirection(PlayerDirection.NONE);
             JOptionPane.showMessageDialog(board, "Level finish !");
+            board.dispose();
+            new Board(board.getLevel() + 1).setVisible(true);
         }
     }
 

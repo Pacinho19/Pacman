@@ -24,6 +24,8 @@ public class Board extends JFrame implements ActionListener {
 
     @Getter
     private JPanel boardPanel;
+
+    @Getter
     private int level;
 
     @Getter
@@ -45,6 +47,7 @@ public class Board extends JFrame implements ActionListener {
 
         this.setTitle("Pacman");
         this.setSize(900, 900);
+//        this.setExtendedState( this.getExtendedState()|JFrame.MAXIMIZED_BOTH );
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -70,6 +73,7 @@ public class Board extends JFrame implements ActionListener {
 
     private void initComponents() {
         boardPanel = new JPanel(new GridLayout(rows, cols));
+        boardPanel.setDoubleBuffered(true);
     }
 
     private void initView() {

@@ -19,6 +19,7 @@ public class PlayerCell extends Cell {
     public PlayerCell() {
         this.cellType = CellType.PLAYER;
         setDirection(PlayerDirection.NONE);
+        this.setDoubleBuffered(true);
         init();
     }
 
