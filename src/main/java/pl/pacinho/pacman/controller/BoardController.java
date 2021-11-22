@@ -135,17 +135,25 @@ public class BoardController {
 
         if (bonus.isInUse()) {
             bonus.incrementBonusTick();
+            setBonusLabelText();
             if (bonus.getBonusTick() >= bonus.getBonusTime()) {
                 bonus.clear();
+                board.getBonusTimeJL().setText("");
+                board.getBonusTimeJL().setVisible(false);
                 playerCell.setOriginalBorder();
             }
         }
     }
 
-    private void addBonus() {
+    private void setBonusLabelText() {
+        board.getBonusTimeJL().setText("Current bonus : " + bonus.getBonusType().toString() + ", Left ticks : " + (bonus.getBonusTime() - bonus.getBonusTick()));
+        board.getBonusTimeJL().setVisible(true);
+        refresh();
+    }
 
-//        BonusType bt = BonusType.findById( RandomUtils.getInt(0, 2));
-        BonusType bt = BonusType.MONSTER_KILL;
+    private void addBonus() {
+        BonusType bt = BonusType.findById(RandomUtils.getInt(0, 2));
+//        BonusType bt = BonusType.MONSTER_KILL;
 
         List<Cell> pointCell = Arrays.stream(boardPanel.getComponents())
                 .map(c -> (Cell) c)
@@ -173,17 +181,17 @@ public class BoardController {
     }
 
     private void moveMonsters() {
-        MonsterCell monsterCell1=null;
+        MonsterCell monsterCell1 = null;
         for (MonsterCell monsterCell : monsters) {
-             monsterCell1 = goMove(monsterCell);
-            if(monsterCell1!=null){
+            monsterCell1 = goMove(monsterCell);
+            if (monsterCell1 != null) {
                 break;
             }
             if (end) {
                 return;
             }
         }
-        if(monsterCell1!=null){
+        if (monsterCell1 != null) {
             monsters.remove(monsterCell1);
         }
     }
@@ -353,7 +361,6 @@ public class BoardController {
         }
     }
 
-
     private void setRandomFinishCell() {
         List<Cell> emptyCells = Arrays.stream(boardPanel.getComponents())
                 .map(c -> (Cell) c)
@@ -388,7 +395,6 @@ public class BoardController {
         board.dispose();
         new Board(board.getLevel()).setVisible(true);
     }
-
 
     private void refresh() {
         board.repaint();

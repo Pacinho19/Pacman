@@ -26,6 +26,10 @@ public class Board extends JFrame implements ActionListener {
     @Getter
     private JPanel boardPanel;
     private JButton restartJB;
+    private JPanel topPanel;
+
+    @Getter
+    private JLabel bonusTimeJL;
 
     @Getter
     private int level;
@@ -35,12 +39,9 @@ public class Board extends JFrame implements ActionListener {
 
     private Board self;
 
-    private boolean end = false;
-
     private BoardController boardController;
 
     public Board(int level) {
-
         this.level = level;
         this.self = this;
 
@@ -66,14 +67,19 @@ public class Board extends JFrame implements ActionListener {
         Pair<Integer, Integer> dimension = Levels.getDimension(levelData.getBoard());
         rows = dimension.getKey();
         cols = dimension.getValue();
-
     }
 
     private void initComponents() {
         boardPanel = new JPanel(new GridLayout(rows, cols));
         boardPanel.setDoubleBuffered(true);
 
-        restartJB = new JButton("Rester");
+        restartJB = new JButton("Restart");
+
+        topPanel = new JPanel(new BorderLayout());
+
+        bonusTimeJL = new JLabel();
+        bonusTimeJL.setFont(new Font("Serif", Font.PLAIN, 20));
+        bonusTimeJL.setVisible(false);
     }
 
     private void initView() {
@@ -81,7 +87,11 @@ public class Board extends JFrame implements ActionListener {
         main.setLayout(new BorderLayout());
 
         main.add(boardPanel, BorderLayout.CENTER);
-        main.add(restartJB, BorderLayout.NORTH);
+        main.add(restartJB, BorderLayout.SOUTH);
+
+        topPanel.add(bonusTimeJL, BorderLayout.CENTER);
+        topPanel.add(new JLabel("Test"), BorderLayout.EAST);
+        main.add(topPanel, BorderLayout.NORTH);
     }
 
     private void initActions() {
