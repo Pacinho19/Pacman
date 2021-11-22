@@ -4,6 +4,7 @@ import javafx.util.Pair;
 import lombok.Getter;
 import pl.pacinho.pacman.controller.BoardController;
 import pl.pacinho.pacman.logic.Levels;
+import pl.pacinho.pacman.model.LevelData;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +21,7 @@ public class Board extends JFrame implements ActionListener {
     private int cols;
 
     @Getter
-    private String levelMap;
+    private LevelData levelData;
 
     @Getter
     private JPanel boardPanel;
@@ -64,8 +65,8 @@ public class Board extends JFrame implements ActionListener {
 
 
     private void initLevelProperties() {
-        levelMap = Levels.getLevelsMap().get(level);
-        Pair<Integer, Integer> dimension = Levels.getDimension(levelMap);
+        levelData = Levels.getLevelsMap().get(level);
+        Pair<Integer, Integer> dimension = Levels.getDimension(levelData.getBoard());
         rows = dimension.getKey();
         cols = dimension.getValue();
 

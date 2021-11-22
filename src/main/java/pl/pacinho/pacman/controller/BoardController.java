@@ -33,7 +33,7 @@ public class BoardController {
 
     private List<Cell> pointsMap;
 
-    private int monsterCount = 2;
+    private int monsterCount = 0;
 
     private List<MonsterCell> monsters;
 
@@ -55,10 +55,12 @@ public class BoardController {
         wallList = new ArrayList<>();
         pointsMap = new ArrayList<>();
         monsters = new ArrayList<>();
+
+        monsterCount =  board.getLevelData().getMonsterCount();
     }
 
     public void initLevelView() {
-        String[] rows = board.getLevelMap().split("\n");
+        String[] rows = board.getLevelData().getBoard().split("\n");
 
         int idx = 0;
         for (String row : rows) {
