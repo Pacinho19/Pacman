@@ -52,4 +52,10 @@ public class Images {
         }
         return null;
     }
+
+    private static ImageIcon monsterA = loadGIF("MonsterA");
+
+    public static ImageIcon getMonster() {
+        return monsterA;
+    }
 }

@@ -29,10 +29,16 @@ public class BoardController {
 
     private boolean finishCell = false;
 
+    private List<Integer> pointsMap;
+
+    private int monsterCount = 1;
+
     public BoardController(Board board) {
         this.board = board;
-        wallList = new ArrayList<>();
         boardPanel = board.getBoardPanel();
+
+        wallList = new ArrayList<>();
+        pointsMap = new ArrayList<>();
     }
 
     public void initLevelView() {
@@ -52,11 +58,15 @@ public class BoardController {
                     wallList.add(idx);
                 } else if (cellInstance instanceof PointCell) {
                     maxPoint++;
+                    pointsMap.add(idx);
                 }
                 idx++;
             }
         }
 
+        for (int i = 0; i < monsterCount; i++) {
+            locateMonster();
+        }
     }
 
     public void keyPressed(KeyEvent e) {
@@ -108,8 +118,9 @@ public class BoardController {
 
         refresh();
 
-        if(nextCell.getCellType()==CellType.FINISH){
+        if (nextCell.getCellType() == CellType.FINISH) {
             board.getTimer().stop();
+            playerCell.setDirection(PlayerDirection.NONE);
             JOptionPane.showMessageDialog(board, "Level finish !");
         }
     }
@@ -119,11 +130,12 @@ public class BoardController {
         if (nextCell instanceof PointCell) {
             point++;
         }
+        pointsMap.remove(nextCell.getIdx());
 
         if (point == maxPoint
                 && !finishCell) {
             setRandomFinishCell();
-            finishCell=true;
+            finishCell = true;
         }
     }
 
@@ -139,6 +151,20 @@ public class BoardController {
         boardPanel.remove(cell.getIdx());
         boardPanel.add(new FinishCell(), cell.getIdx());
     }
+
+    private void locateMonster() {
+        List<Cell> pointCells = Arrays.stream(boardPanel.getComponents())
+                .map(c -> (Cell) c)
+                .filter(c -> c.getCellType() == CellType.POINT)
+                .collect(Collectors.toList());
+
+        int finishCellIdx = RandomUtils.getInt(0, pointCells.size() - 1);
+        Cell cell = pointCells.get(finishCellIdx);
+
+        boardPanel.remove(cell.getIdx());
+        boardPanel.add(new MonsterCell(), cell.getIdx());
+    }
+
 
     private void refresh() {
         board.repaint();

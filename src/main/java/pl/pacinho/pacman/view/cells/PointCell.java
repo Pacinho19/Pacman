@@ -1,14 +1,11 @@
 package pl.pacinho.pacman.view.cells;
 
-import lombok.Setter;
-import pl.pacinho.pacman.logic.Images;
 import pl.pacinho.pacman.model.CellType;
-import pl.pacinho.pacman.model.PlayerDirection;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class PointCell extends Cell{
+public class PointCell extends Cell {
 
     private ImageIcon image;
 
@@ -25,10 +22,12 @@ public class PointCell extends Cell{
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        int x = (getHeight() - getHeight()/4) / 2;
-        int y = (getWidth() - getHeight()/4) / 2;
+        int oHeight = (int) (getHeight() * 0.1);
+        int oWidth = (int) (getWidth() * 0.1);
+        int x = (getHeight() - oHeight) / 2;
+        int y = (getWidth() - oWidth) / 2;
         g.setColor(Color.PINK);
-        g.fillOval(x,y,getHeight()/4, getWidth()/4);
+        g.fillRect(x, y, oHeight, oWidth);
     }
 
 

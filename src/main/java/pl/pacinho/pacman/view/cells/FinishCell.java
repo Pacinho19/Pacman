@@ -25,7 +25,7 @@ public class FinishCell extends Cell{
         int x = (getHeight() - getHeight()/4) / 2;
         int y = (getWidth() - getHeight()/4) / 2;
         g.setColor(Color.RED);
-        g.fillOval(x,y,getHeight()/3, getWidth()/3);
+        g.fillRect(x,y,getHeight()/3, getWidth()/3);
     }
 
 
