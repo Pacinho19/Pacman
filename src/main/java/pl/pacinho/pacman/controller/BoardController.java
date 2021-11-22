@@ -86,30 +86,36 @@ public class BoardController {
     }
 
     public void gameTick() {
-        if (!end) {
-            moveMonsters();
-            refresh();
-            if (playerCell.getDirection() == PlayerDirection.NONE) {
-                return;
-            } else if (playerCell.getDirection() == PlayerDirection.RIGHT) {
-                int nextPosition = playerCell.getPosition() + 1;
-                replaceCells(nextPosition);
-            } else if (playerCell.getDirection() == PlayerDirection.LEFT) {
-                int nextPosition = playerCell.getPosition() - 1;
-                replaceCells(nextPosition);
-            } else if (playerCell.getDirection() == PlayerDirection.DOWN) {
-                int nextPosition = playerCell.getPosition() + board.getCols();
-                replaceCells(nextPosition);
-            } else if (playerCell.getDirection() == PlayerDirection.UP) {
-                int nextPosition = playerCell.getPosition() - board.getCols();
-                replaceCells(nextPosition);
-            }
+        moveMonsters();
+        refresh();
+
+        if(end){
+            return;
+        }
+
+        if (playerCell.getDirection() == PlayerDirection.NONE) {
+            return;
+        } else if (playerCell.getDirection() == PlayerDirection.RIGHT) {
+            int nextPosition = playerCell.getPosition() + 1;
+            replaceCells(nextPosition);
+        } else if (playerCell.getDirection() == PlayerDirection.LEFT) {
+            int nextPosition = playerCell.getPosition() - 1;
+            replaceCells(nextPosition);
+        } else if (playerCell.getDirection() == PlayerDirection.DOWN) {
+            int nextPosition = playerCell.getPosition() + board.getCols();
+            replaceCells(nextPosition);
+        } else if (playerCell.getDirection() == PlayerDirection.UP) {
+            int nextPosition = playerCell.getPosition() - board.getCols();
+            replaceCells(nextPosition);
         }
     }
 
     private void moveMonsters() {
         for (MonsterCell monsterCell : monsters) {
             goMove(monsterCell);
+            if(end){
+                return;
+            }
         }
     }
 
@@ -134,7 +140,7 @@ public class BoardController {
         }
 
         Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
-        if(nextCell instanceof MonsterCell){
+        if (nextCell instanceof MonsterCell) {
             MonsterDirection direction = RandomUtils.getMonsterDirection();
             monsterCell.setMonsterDirection(direction);
             return;
@@ -144,19 +150,29 @@ public class BoardController {
             PointCell pointCell = new PointCell();
             pointCell.setIdx(monsterCell.getIdx());
             boardPanel.add(pointCell, monsterCell.getIdx());
-        }else{
+        } else {
             boardPanel.add(new EmptyCell(monsterCell.getIdx()), monsterCell.getIdx());
+        }
+
+        if (nextCell instanceof PlayerCell) {
+
+            int position = playerCell.getPosition();
+            boardPanel.remove(position);
+            boardPanel.add(monsterCell, position);
+            monsterCell.setIdx(position);
+            refresh();
+
+            board.getTimer().stop();
+            JOptionPane.showMessageDialog(board, "Game Over2 !");
+            end= true;
+
+            return;
         }
 
         boardPanel.remove(nextPosition);
         boardPanel.add(monsterCell, nextPosition);
         monsterCell.setIdx(nextPosition);
 
-        if(nextCell instanceof PlayerCell){
-            board.getTimer().stop();
-            JOptionPane.showMessageDialog(board, "Game Over2 !");
-            return;
-        }
     }
 
     private void replaceCells(int nextPosition) {
@@ -171,12 +187,14 @@ public class BoardController {
         boardPanel.remove(playerCell.getPosition());
         boardPanel.add(new EmptyCell(nextCell.getIdx()), playerCell.getPosition());
 
-        if(nextCell instanceof MonsterCell){
+        if (nextCell instanceof MonsterCell) {
             boardPanel.remove(nextPosition);
             boardPanel.add(new MonsterCell(0), nextPosition);
             refresh();
             board.getTimer().stop();
+
             JOptionPane.showMessageDialog(board, "Game Over1 !");
+            end= true;
 
             return;
         }

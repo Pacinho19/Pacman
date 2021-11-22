@@ -28,6 +28,10 @@ public class Board extends JFrame implements ActionListener {
 
     @Getter
     private Timer timer;
+
+    @Getter
+    private Timer timer2;
+
     private Board self;
 
     private boolean end = false;
@@ -44,7 +48,8 @@ public class Board extends JFrame implements ActionListener {
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        timer = new Timer(200, this);
+        timer = new Timer(150, this);
+        timer2 = new Timer(250, this);
         initLevelProperties();
         initComponents();
         initView();
