@@ -3,10 +3,7 @@ package pl.pacinho.pacman.logic;
 import javafx.util.Pair;
 import lombok.Getter;
 import pl.pacinho.pacman.model.CellType;
-import pl.pacinho.pacman.view.cells.Cell;
-import pl.pacinho.pacman.view.cells.EmptyCell;
-import pl.pacinho.pacman.view.cells.PlayerCell;
-import pl.pacinho.pacman.view.cells.WallCell;
+import pl.pacinho.pacman.view.cells.*;
 
 import java.util.ArrayList;
 
@@ -17,18 +14,18 @@ public class Levels {
         {
             add(
                     "* * * * * * * * * * * * * * * \n" +
-                            "* P _ _ _ _ _ * _ _ _ _ _ _ *\n" +
-                            "* _ _ _ _ _ _ * _ _ _ _ _ _ *\n" +
-                            "* _ _ _ _ _ _ * _ _ _ _ _ _ *\n" +
-                            "* * * _ _ _ _ * _ _ _ _ _ _ *\n" +
-                            "* _ _ _ _ _ _ * _ _ _ _ _ _ *\n" +
-                            "* _ _ _ _ _ _ * _ _ _ _ _ _ *\n" +
-                            "* _ _ _ _ _ _ _ _ _ _ _ _ _ *\n" +
-                            "* _ _ _ _ _ _ _ _ _ _ _ _ _ *\n" +
-                            "* _ _ _ _ _ _ * _ _ _ _ _ _ *\n" +
-                            "* _ _ _ _ _ _ * _ _ _ _ * * *\n" +
-                            "* _ _ _ _ _ _ * _ _ _ _ _ _ *\n" +
-                            "* _ _ _ _ _ _ * _ _ _ _ _ _ *\n" +
+                            "* P @ @ @ @ @ * @ @ @ @ @ @ *\n" +
+                            "* @ @ @ @ @ @ * @ @ @ @ @ @ *\n" +
+                            "* @ @ @ @ @ @ * @ @ @ @ @ @ *\n" +
+                            "* * * @ @ @ @ * @ @ @ @ @ @ *\n" +
+                            "* @ @ @ @ @ @ * @ @ @ @ @ @ *\n" +
+                            "* @ @ @ @ @ @ * @ @ @ @ @ @ *\n" +
+                            "* @ @ @ @ @ @ @ @ @ @ @ @ @ *\n" +
+                            "* @ @ @ @ @ @ @ @ @ @ @ @ @ *\n" +
+                            "* @ @ @ @ @ @ * @ @ @ @ @ @ *\n" +
+                            "* @ @ @ @ @ @ * @ @ @ @ * * *\n" +
+                            "* @ @ @ @ @ @ * @ @ @ @ @ @ *\n" +
+                            "* @ @ @ @ @ @ * @ @ @ @ @ @ *\n" +
                             "* * * * * * * * * * * * * * *");
         }
     };
@@ -48,6 +45,8 @@ public class Levels {
                 return new EmptyCell();
             case PLAYER:
                 return new PlayerCell();
+            case POINT:
+                return new PointCell();
         }
         return new EmptyCell();
     }

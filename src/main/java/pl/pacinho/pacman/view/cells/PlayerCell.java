@@ -27,7 +27,7 @@ public class PlayerCell extends Cell {
 
     private void init() {
         this.setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.WHITE));
-        //this.setBackground(Color.YELLOW);
+        this.setBackground(Color.WHITE);
     }
 
     @Override
