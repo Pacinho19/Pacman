@@ -51,7 +51,7 @@ public class Levels {
         return new Pair<>(rows, cols);
     }
 
-    public static Cell getCellInstance(CellType cellType) {
+    public static Cell getCellInstance(CellType cellType ) {
         switch (cellType) {
             case WALL:
                 return new WallCell();

@@ -2,6 +2,7 @@ package pl.pacinho.pacman.controller;
 
 import pl.pacinho.pacman.logic.Levels;
 import pl.pacinho.pacman.model.CellType;
+import pl.pacinho.pacman.model.MonsterDirection;
 import pl.pacinho.pacman.model.PlayerDirection;
 import pl.pacinho.pacman.utils.RandomUtils;
 import pl.pacinho.pacman.view.Board;
@@ -29,9 +30,11 @@ public class BoardController {
 
     private boolean finishCell = false;
 
-    private List<Integer> pointsMap;
+    private List<Cell> pointsMap;
 
-    private int monsterCount = 1;
+    private int monsterCount = 2;
+
+    private List<MonsterCell> monsters;
 
     public BoardController(Board board) {
         this.board = board;
@@ -39,6 +42,7 @@ public class BoardController {
 
         wallList = new ArrayList<>();
         pointsMap = new ArrayList<>();
+        monsters = new ArrayList<>();
     }
 
     public void initLevelView() {
@@ -58,7 +62,7 @@ public class BoardController {
                     wallList.add(idx);
                 } else if (cellInstance instanceof PointCell) {
                     maxPoint++;
-                    pointsMap.add(idx);
+                    pointsMap.add(cellInstance);
                 }
                 idx++;
             }
@@ -72,6 +76,7 @@ public class BoardController {
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             board.getTimer().start();
+            monsters.forEach(m -> m.setMonsterDirection(MonsterDirection.RIGHT));
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT
                 || e.getKeyCode() == KeyEvent.VK_LEFT
                 || e.getKeyCode() == KeyEvent.VK_UP
@@ -82,6 +87,8 @@ public class BoardController {
 
     public void gameTick() {
         if (!end) {
+            moveMonsters();
+            refresh();
             if (playerCell.getDirection() == PlayerDirection.NONE) {
                 return;
             } else if (playerCell.getDirection() == PlayerDirection.RIGHT) {
@@ -100,6 +107,58 @@ public class BoardController {
         }
     }
 
+    private void moveMonsters() {
+        for (MonsterCell monsterCell : monsters) {
+            goMove(monsterCell);
+        }
+    }
+
+    private void goMove(MonsterCell monsterCell) {
+        int nextPosition = 0;
+        if (monsterCell.getMonsterDirection() == MonsterDirection.NONE) {
+            return;
+        } else if (monsterCell.getMonsterDirection() == MonsterDirection.RIGHT) {
+            nextPosition = monsterCell.getIdx() + 1;
+        } else if (monsterCell.getMonsterDirection() == MonsterDirection.LEFT) {
+            nextPosition = monsterCell.getIdx() - 1;
+        } else if (monsterCell.getMonsterDirection() == MonsterDirection.DOWN) {
+            nextPosition = monsterCell.getIdx() + board.getCols();
+        } else if (monsterCell.getMonsterDirection() == MonsterDirection.UP) {
+            nextPosition = monsterCell.getIdx() - board.getCols();
+        }
+
+        if (wallList.contains(nextPosition)) {
+            MonsterDirection direction = RandomUtils.getMonsterDirection();
+            monsterCell.setMonsterDirection(direction);
+            return;
+        }
+
+        Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
+        if(nextCell instanceof MonsterCell){
+            MonsterDirection direction = RandomUtils.getMonsterDirection();
+            monsterCell.setMonsterDirection(direction);
+            return;
+        }
+        boardPanel.remove(monsterCell.getIdx());
+        if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(monsterCell.getIdx())) {
+            PointCell pointCell = new PointCell();
+            pointCell.setIdx(monsterCell.getIdx());
+            boardPanel.add(pointCell, monsterCell.getIdx());
+        }else{
+            boardPanel.add(new EmptyCell(monsterCell.getIdx()), monsterCell.getIdx());
+        }
+
+        boardPanel.remove(nextPosition);
+        boardPanel.add(monsterCell, nextPosition);
+        monsterCell.setIdx(nextPosition);
+
+        if(nextCell instanceof PlayerCell){
+            board.getTimer().stop();
+            JOptionPane.showMessageDialog(board, "Game Over2 !");
+            return;
+        }
+    }
+
     private void replaceCells(int nextPosition) {
         Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
 
@@ -111,6 +170,16 @@ public class BoardController {
 
         boardPanel.remove(playerCell.getPosition());
         boardPanel.add(new EmptyCell(nextCell.getIdx()), playerCell.getPosition());
+
+        if(nextCell instanceof MonsterCell){
+            boardPanel.remove(nextPosition);
+            boardPanel.add(new MonsterCell(0), nextPosition);
+            refresh();
+            board.getTimer().stop();
+            JOptionPane.showMessageDialog(board, "Game Over1 !");
+
+            return;
+        }
 
         boardPanel.remove(nextPosition);
         boardPanel.add(playerCell, nextPosition);
@@ -129,13 +198,18 @@ public class BoardController {
         Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
         if (nextCell instanceof PointCell) {
             point++;
-        }
-        pointsMap.remove(nextCell.getIdx());
+            Cell cell = pointsMap.stream()
+                    .filter(pm -> pm.getIdx() == nextCell.getIdx())
+                    .findFirst()
+                    .get();
+            pointsMap.remove(cell);
 
-        if (point == maxPoint
-                && !finishCell) {
-            setRandomFinishCell();
-            finishCell = true;
+            if (point == maxPoint
+                    && !finishCell) {
+                setRandomFinishCell();
+                finishCell = true;
+            }
+
         }
     }
 
@@ -161,8 +235,10 @@ public class BoardController {
         int finishCellIdx = RandomUtils.getInt(0, pointCells.size() - 1);
         Cell cell = pointCells.get(finishCellIdx);
 
+        MonsterCell monsterCell = new MonsterCell(cell.getIdx());
         boardPanel.remove(cell.getIdx());
-        boardPanel.add(new MonsterCell(), cell.getIdx());
+        boardPanel.add(monsterCell, cell.getIdx());
+        monsters.add(monsterCell);
     }
 
 
