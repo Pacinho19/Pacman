@@ -1,12 +1,13 @@
 package pl.pacinho.pacman.view;
 
 import javafx.util.Pair;
+import lombok.Getter;
+import pl.pacinho.pacman.controller.BoardController;
 import pl.pacinho.pacman.logic.Levels;
-import pl.pacinho.pacman.model.CellType;
 import pl.pacinho.pacman.model.Direction;
 import pl.pacinho.pacman.view.cells.Cell;
 import pl.pacinho.pacman.view.cells.EmptyCell;
-import pl.pacinho.pacman.view.cells.PlayerCell;
+import pl.pacinho.pacman.view.cells.WallCell;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,21 +18,28 @@ import java.awt.event.KeyEvent;
 
 public class Board extends JFrame implements ActionListener {
 
+    @Getter
     private int rows;
+    @Getter
     private int cols;
 
+    @Getter
     private String levelMap;
-    private JPanel board;
+
+    @Getter
+    private JPanel boardPanel;
     private int level;
 
+    @Getter
     private Timer timer;
     private Board self;
 
     private boolean end = false;
 
-    private PlayerCell playerCell;
+    private BoardController boardController;
 
     public Board(int level) {
+
         this.level = level;
         this.self = this;
 
@@ -40,33 +48,16 @@ public class Board extends JFrame implements ActionListener {
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        timer = new Timer(1000, this);
+        timer = new Timer(200, this);
         initLevelProperties();
         initComponents();
         initView();
         initActions();
 
-        initLevelView();
+        boardController = new BoardController(this);
+        boardController.initLevelView();
     }
 
-    private void initLevelView() {
-        String[] rows = levelMap.split("\n");
-
-        int idx = 0;
-        for (String row : rows) {
-            String[] cells = row.split(" ");
-            for (String cell : cells) {
-                Cell cellInstance = Levels.getCellInstance(CellType.findBySymbol(cell));
-                board.add(cellInstance);
-                if (cellInstance instanceof PlayerCell) {
-                    playerCell = (PlayerCell) cellInstance;
-                    playerCell.setPosition(idx);
-                }
-                idx++;
-            }
-        }
-
-    }
 
     private void initLevelProperties() {
         levelMap = Levels.getLevelsMap().get(level);
@@ -77,14 +68,14 @@ public class Board extends JFrame implements ActionListener {
     }
 
     private void initComponents() {
-        board = new JPanel(new GridLayout(rows, cols));
+        boardPanel = new JPanel(new GridLayout(rows, cols));
     }
 
     private void initView() {
         Container main = this.getContentPane();
         main.setLayout(new BorderLayout());
 
-        main.add(board, BorderLayout.CENTER);
+        main.add(boardPanel, BorderLayout.CENTER);
     }
 
     private void initActions() {
@@ -93,41 +84,13 @@ public class Board extends JFrame implements ActionListener {
         self.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    timer.start();
-                }else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    playerCell.setDirection(Direction.RIGHT);
-                }
+                boardController.keyPressed(e);
             }
         });
     }
 
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (!end) {
-            System.out.println("Tick");
-            Component[] components = board.getComponents();
-            if (playerCell.getDirection() == Direction.NONE) {
-                return;
-            } else if (playerCell.getDirection() == Direction.RIGHT) {
-                board.remove(playerCell.getPosition());
-                board.add(new EmptyCell(), playerCell.getPosition());
-
-                board.remove(playerCell.getPosition()+1);
-                board.add(playerCell, playerCell.getPosition()+1);
-                playerCell.setPosition(playerCell.getPosition()+1);
-
-            }
-            refresh();
-
-        }
+        boardController.gameTick();
     }
-
-    private void refresh() {
-        self.repaint();
-        self.revalidate();
-        self.validate();
-    }
-
 }
