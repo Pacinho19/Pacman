@@ -38,7 +38,7 @@ public class Board extends JFrame implements ActionListener {
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        timer = new Timer(180, this);
+        timer = new Timer(160, this);
         initLevelProperties();
         initComponents();
         initView();
@@ -50,6 +50,10 @@ public class Board extends JFrame implements ActionListener {
 
 
     private void initLevelProperties() {
+        if(level>Levels.getLevelsMap().size()-1){
+            JOptionPane.showMessageDialog(self, "No more levels ! Develop in progress..");
+            System.exit(0);
+        }
         levelData = Levels.getLevelsMap().get(level);
         Pair<Integer, Integer> dimension = Levels.getDimension(levelData.getBoard());
         rows = dimension.getKey();
@@ -70,6 +74,12 @@ public class Board extends JFrame implements ActionListener {
 
         lifePanel = new JPanel();
         lifePanel.setLayout(new BoxLayout(lifePanel, BoxLayout.X_AXIS));
+
+        lifeJL = new JLabel("Life : ");
+        lifeJL.setFont(new Font("Serif", Font.PLAIN, 30));
+
+        pointsJL = new JLabel();
+        pointsJL.setFont(new Font("Serif", Font.PLAIN, 20));
     }
 
     private void initView() {
@@ -80,7 +90,13 @@ public class Board extends JFrame implements ActionListener {
         main.add(restartJB, BorderLayout.SOUTH);
 
         topPanel.add(bonusTimeJL, BorderLayout.CENTER);
-        topPanel.add(lifePanel, BorderLayout.WEST);
+
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.X_AXIS));
+        leftPanel.add(lifeJL);
+        leftPanel.add(lifePanel);
+        topPanel.add(leftPanel, BorderLayout.WEST);
+        topPanel.add(pointsJL, BorderLayout.EAST);
         main.add(topPanel, BorderLayout.NORTH);
     }
 
@@ -110,6 +126,9 @@ public class Board extends JFrame implements ActionListener {
     private JPanel topPanel;
     @Getter
     private JPanel lifePanel;
+    private JLabel lifeJL;
+    @Getter
+    private JLabel pointsJL;
     @Getter
     private JLabel bonusTimeJL;
     private Board self;

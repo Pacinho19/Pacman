@@ -7,7 +7,6 @@ import pl.pacinho.pacman.view.Board;
 import pl.pacinho.pacman.view.cells.*;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -269,6 +268,8 @@ public class BoardController {
                 PointCell pointCell = new PointCell();
                 pointCell.setIdx(nextPosition);
                 boardPanel.add(pointCell, nextPosition);
+                point++;
+                setPointInfo();
             } else {
                 boardPanel.add(new EmptyCell(nextPosition), nextPosition);
             }
@@ -328,6 +329,8 @@ public class BoardController {
                 PointCell pointCell = new PointCell();
                 pointCell.setIdx(nextPosition);
                 boardPanel.add(pointCell, nextPosition);
+                point++;
+                setPointInfo();
             } else {
                 boardPanel.add(new EmptyCell(nextPosition), nextPosition);
             }
@@ -364,6 +367,7 @@ public class BoardController {
 
             if (calcPoint) {
                 point++;
+                setPointInfo();
                 Cell cell = pointsMap.stream()
                         .filter(pm -> pm.getIdx() == nextCell.getIdx())
                         .findFirst()
@@ -385,6 +389,10 @@ public class BoardController {
                 playerCell.setMonsterKillBonusBorder();
             }
         }
+    }
+
+    private void setPointInfo() {
+        board.getPointsJL().setText("Points : " + point + "/" + maxPoint);
     }
 
     private void setRandomFinishCell() {

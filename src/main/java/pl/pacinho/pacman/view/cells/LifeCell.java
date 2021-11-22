@@ -16,7 +16,7 @@ public class LifeCell extends JPanel {
         image = Images.getLifeImage();
         this.setDoubleBuffered(true);
         JLabel lifeIcon = new JLabel();
-        Image scaledInstance = image.getScaledInstance(20, 20,
+        Image scaledInstance = image.getScaledInstance(40, 40,
                 Image.SCALE_SMOOTH);
         lifeIcon.setIcon(new ImageIcon(scaledInstance));
         this.add(lifeIcon);
