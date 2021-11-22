@@ -7,7 +7,12 @@ import java.util.Arrays;
 
 public enum CellType {
 
-    WALL("*"), PLAYER("P"), MONSTER("M"), POINT("@"), EMPTY("_");
+    WALL("*"),
+    PLAYER("P"),
+    MONSTER("M"),
+    POINT("@"),
+    FINISH("#"),
+    EMPTY("_");
 
     @Getter
     private String symbol;

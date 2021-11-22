@@ -3,15 +3,16 @@ package pl.pacinho.pacman.controller;
 import pl.pacinho.pacman.logic.Levels;
 import pl.pacinho.pacman.model.CellType;
 import pl.pacinho.pacman.model.PlayerDirection;
+import pl.pacinho.pacman.utils.RandomUtils;
 import pl.pacinho.pacman.view.Board;
-import pl.pacinho.pacman.view.cells.Cell;
-import pl.pacinho.pacman.view.cells.EmptyCell;
-import pl.pacinho.pacman.view.cells.PlayerCell;
-import pl.pacinho.pacman.view.cells.WallCell;
+import pl.pacinho.pacman.view.cells.*;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class BoardController {
 
@@ -22,6 +23,11 @@ public class BoardController {
     private boolean end = false;
 
     private JPanel boardPanel;
+
+    private int point = 0;
+    private int maxPoint = 0;
+
+    private boolean finishCell = false;
 
     public BoardController(Board board) {
         this.board = board;
@@ -37,12 +43,15 @@ public class BoardController {
             String[] cells = row.split(" ");
             for (String cell : cells) {
                 Cell cellInstance = Levels.getCellInstance(CellType.findBySymbol(cell));
+                cellInstance.setIdx(idx);
                 boardPanel.add(cellInstance);
                 if (cellInstance instanceof PlayerCell) {
                     playerCell = (PlayerCell) cellInstance;
                     playerCell.setPosition(idx);
                 } else if (cellInstance instanceof WallCell) {
                     wallList.add(idx);
+                } else if (cellInstance instanceof PointCell) {
+                    maxPoint++;
                 }
                 idx++;
             }
@@ -63,7 +72,6 @@ public class BoardController {
 
     public void gameTick() {
         if (!end) {
-            System.out.println("Tick");
             if (playerCell.getDirection() == PlayerDirection.NONE) {
                 return;
             } else if (playerCell.getDirection() == PlayerDirection.RIGHT) {
@@ -79,14 +87,17 @@ public class BoardController {
                 int nextPosition = playerCell.getPosition() - board.getCols();
                 replaceCells(nextPosition);
             }
-            refresh();
         }
     }
 
     private void replaceCells(int nextPosition) {
+        Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
+
         if (wallList.contains(nextPosition)) {
             return;
         }
+
+        checkPoint(nextPosition);
 
         boardPanel.remove(playerCell.getPosition());
         boardPanel.add(new EmptyCell(), playerCell.getPosition());
@@ -94,6 +105,40 @@ public class BoardController {
         boardPanel.remove(nextPosition);
         boardPanel.add(playerCell, nextPosition);
         playerCell.setPosition(nextPosition);
+
+        refresh();
+
+        if(nextCell.getCellType()==CellType.FINISH){
+            board.getTimer().stop();
+            JOptionPane.showMessageDialog(board, "Level finish !");
+        }
+    }
+
+    private void checkPoint(int nextPosition) {
+        Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
+        if (nextCell instanceof PointCell) {
+            point++;
+            System.out.println(point);
+        }
+
+        if (point == maxPoint
+                && !finishCell) {
+            setRandomFinishCell();
+            finishCell=true;
+        }
+    }
+
+    private void setRandomFinishCell() {
+        List<Cell> emptyCells = Arrays.stream(boardPanel.getComponents())
+                .map(c -> (Cell) c)
+                .filter(c -> c.getCellType() == CellType.EMPTY)
+                .collect(Collectors.toList());
+
+        int finishCellIdx = RandomUtils.getInt(0, emptyCells.size() - 1);
+        Cell cell = emptyCells.get(finishCellIdx);
+
+        boardPanel.remove(cell.getIdx());
+        boardPanel.add(new FinishCell(), cell.getIdx());
     }
 
     private void refresh() {
