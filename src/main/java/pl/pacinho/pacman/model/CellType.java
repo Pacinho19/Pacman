@@ -11,6 +11,7 @@ public enum CellType {
     PLAYER("P"),
     MONSTER("M"),
     POINT("@"),
+    MONSTER_KILLER("^"),
     FINISH("#"),
     EMPTY("_");
 

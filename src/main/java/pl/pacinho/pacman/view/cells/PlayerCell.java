@@ -1,20 +1,20 @@
 package pl.pacinho.pacman.view.cells;
 
 import lombok.Getter;
-import lombok.Setter;
 import pl.pacinho.pacman.logic.Images;
 import pl.pacinho.pacman.model.CellType;
 import pl.pacinho.pacman.model.PlayerDirection;
 
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 
 @Getter
 public class PlayerCell extends Cell {
 
     private PlayerDirection direction;
     private ImageIcon image;
+private MatteBorder border;
 
     public PlayerCell() {
         this.cellType = CellType.PLAYER;
@@ -24,7 +24,8 @@ public class PlayerCell extends Cell {
     }
 
     private void init() {
-        this.setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.WHITE));
+        border = BorderFactory.createMatteBorder(5, 5, 5, 5, Color.WHITE);
+        this.setBorder(border);
         this.setBackground(Color.WHITE);
     }
 
@@ -43,6 +44,17 @@ public class PlayerCell extends Cell {
     public void setDirection(PlayerDirection direction) {
         this.direction = direction;
         image = Images.getByDirection(direction);
+    }
+
+
+    public void setMonsterKillBonusBorder(){
+        this.setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.BLACK));
+        this.repaint();
+    }
+
+    public void setOriginalBorder(){
+        this.setBorder(border);
+        this.repaint();
     }
 
 }

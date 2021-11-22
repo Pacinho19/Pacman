@@ -1,9 +1,7 @@
 package pl.pacinho.pacman.controller;
 
 import pl.pacinho.pacman.logic.Levels;
-import pl.pacinho.pacman.model.CellType;
-import pl.pacinho.pacman.model.MonsterDirection;
-import pl.pacinho.pacman.model.PlayerDirection;
+import pl.pacinho.pacman.model.*;
 import pl.pacinho.pacman.utils.RandomUtils;
 import pl.pacinho.pacman.view.Board;
 import pl.pacinho.pacman.view.cells.*;
@@ -37,16 +35,7 @@ public class BoardController {
 
     private List<MonsterCell> monsters;
 
-    private int bonusDelay = 30;
-    private int bonusTime = 20;
-    private ExtraPointCell extraPointCell;
-
-    private int bonusTick = 0;
-    private int tickWithoutBonus = 0;
-
-    private boolean bonus = false;
-    private boolean bonusUse = false;
-
+    private Bonus bonus;
 
     public BoardController(Board board) {
         this.board = board;
@@ -56,7 +45,8 @@ public class BoardController {
         pointsMap = new ArrayList<>();
         monsters = new ArrayList<>();
 
-        monsterCount =  board.getLevelData().getMonsterCount();
+        bonus = new Bonus();
+        monsterCount = board.getLevelData().getMonsterCount();
     }
 
     public void initLevelView() {
@@ -101,7 +91,7 @@ public class BoardController {
     public void gameTick() {
         checkBonus();
 
-        if (!bonusUse) {
+        if (!bonus.isInUse() || bonus.getBonusType() != BonusType.MONSTER_FREEZE) {
             moveMonsters();
             refresh();
         }
@@ -129,27 +119,26 @@ public class BoardController {
     }
 
     private void checkBonus() {
-        if (!bonus) {
-            tickWithoutBonus++;
-            if (tickWithoutBonus >= bonusDelay) {
+        if (!bonus.isActive()) {
+            bonus.incrementTickWithoutBonus();
+            if (bonus.getTickWithoutBonus() >= bonus.getBonusDelay()) {
                 addBonus();
-                bonus = true;
             }
         }
 
-        if (bonusUse) {
-            bonusTick++;
-            if (bonusTick >= bonusTime) {
-                bonusTick = 0;
-                bonus = false;
-                bonusUse = false;
-                tickWithoutBonus = 0;
-                extraPointCell = null;
+        if (bonus.isInUse()) {
+            bonus.incrementBonusTick();
+            if (bonus.getBonusTick() >= bonus.getBonusTime()) {
+                bonus.clear();
+                playerCell.setOriginalBorder();
             }
         }
     }
 
     private void addBonus() {
+
+        BonusType bt = BonusType.findById( RandomUtils.getInt(0, 2));
+
         List<Cell> pointCell = Arrays.stream(boardPanel.getComponents())
                 .map(c -> (Cell) c)
                 .filter(c -> c.getCellType() == CellType.POINT
@@ -158,13 +147,20 @@ public class BoardController {
 
         int extraPointIdx = RandomUtils.getInt(0, pointCell.size() - 1);
 
-
         Cell cell = (pointCell.get(extraPointIdx));
-        ExtraPointCell extraPointCell = new ExtraPointCell(cell.getIdx(), cell instanceof PointCell);
-        boardPanel.remove(cell.getIdx());
-        boardPanel.add(extraPointCell, cell.getIdx());
 
-        this.extraPointCell = extraPointCell;
+        Cell celToBoard = null;
+        if (bt == BonusType.MONSTER_FREEZE) {
+            celToBoard = new ExtraPointCell(cell.getIdx(), cell instanceof PointCell);
+        } else if (bt == BonusType.MONSTER_KILL) {
+            celToBoard = new MonsterKillerCell(cell.getIdx(), cell instanceof PointCell);
+        }
+        boardPanel.remove(cell.getIdx());
+        boardPanel.add(celToBoard, cell.getIdx());
+
+        bonus.setActive(true);
+        bonus.setCell(celToBoard);
+        bonus.setBonusType(bt);
         refresh();
     }
 
@@ -204,8 +200,8 @@ public class BoardController {
             return;
         }
         boardPanel.remove(monsterCell.getIdx());
-        if (extraPointCell != null && monsterCell.getIdx() == extraPointCell.getIdx()) {
-            boardPanel.add(extraPointCell, monsterCell.getIdx());
+        if (bonus.isActive() && monsterCell.getIdx() == bonus.getCell().getIdx()) {
+            boardPanel.add(bonus.getCell(), monsterCell.getIdx());
         } else if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(monsterCell.getIdx())) {
             PointCell pointCell = new PointCell();
             pointCell.setIdx(monsterCell.getIdx());
@@ -246,9 +242,11 @@ public class BoardController {
         checkPoint(nextPosition);
 
         boardPanel.remove(playerCell.getIdx());
-        boardPanel.add(new EmptyCell(nextCell.getIdx()), playerCell.getIdx());
+        boardPanel.add(new EmptyCell(playerCell.getIdx()), playerCell.getIdx());
 
-        if (nextCell instanceof MonsterCell) {
+        if (nextCell instanceof MonsterCell
+                && (!bonus.isInUse()
+                || (bonus.getBonusType() != BonusType.MONSTER_KILL))) {
             boardPanel.remove(nextPosition);
             boardPanel.add(new MonsterCell(0), nextPosition);
             refresh();
@@ -256,7 +254,19 @@ public class BoardController {
 
             JOptionPane.showMessageDialog(board, "Game Over1 !");
             end = true;
-
+            return;
+        }else if(bonus.isInUse() && bonus.getBonusType()==BonusType.MONSTER_KILL && nextCell instanceof MonsterCell){
+            boardPanel.remove(nextPosition);
+            if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(nextPosition)) {
+                PointCell pointCell = new PointCell();
+                pointCell.setIdx(nextPosition);
+                boardPanel.add(pointCell,nextPosition);
+            }  else {
+                boardPanel.add(new EmptyCell(nextPosition), nextPosition);
+            }
+            boardPanel.remove(playerCell.getIdx());
+            boardPanel.add(playerCell, playerCell.getIdx());
+            playerCell.setIdx(nextPosition);
             return;
         }
 
@@ -300,10 +310,15 @@ public class BoardController {
             }
         }
 
-        if (nextCell instanceof ExtraPointCell) {
-            bonusUse = true;
+        if (nextCell instanceof ExtraPointCell || nextCell instanceof  MonsterKillerCell) {
+            bonus.setInUse(true);
+
+            if(nextCell instanceof  MonsterKillerCell){
+                playerCell.setMonsterKillBonusBorder();
+            }
         }
     }
+
 
     private void setRandomFinishCell() {
         List<Cell> emptyCells = Arrays.stream(boardPanel.getComponents())
