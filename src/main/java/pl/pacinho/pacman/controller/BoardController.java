@@ -2,7 +2,7 @@ package pl.pacinho.pacman.controller;
 
 import pl.pacinho.pacman.logic.Levels;
 import pl.pacinho.pacman.model.CellType;
-import pl.pacinho.pacman.model.Direction;
+import pl.pacinho.pacman.model.PlayerDirection;
 import pl.pacinho.pacman.view.Board;
 import pl.pacinho.pacman.view.cells.Cell;
 import pl.pacinho.pacman.view.cells.EmptyCell;
@@ -57,25 +57,25 @@ public class BoardController {
                 || e.getKeyCode() == KeyEvent.VK_LEFT
                 || e.getKeyCode() == KeyEvent.VK_UP
                 || e.getKeyCode() == KeyEvent.VK_DOWN) {
-            playerCell.setDirection(Direction.findByKey(e));
+            playerCell.setDirection(PlayerDirection.findByKey(e));
         }
     }
 
     public void gameTick() {
         if (!end) {
             System.out.println("Tick");
-            if (playerCell.getDirection() == Direction.NONE) {
+            if (playerCell.getDirection() == PlayerDirection.NONE) {
                 return;
-            } else if (playerCell.getDirection() == Direction.RIGHT) {
+            } else if (playerCell.getDirection() == PlayerDirection.RIGHT) {
                 int nextPosition = playerCell.getPosition() + 1;
                 replaceCells(nextPosition);
-            } else if (playerCell.getDirection() == Direction.LEFT) {
+            } else if (playerCell.getDirection() == PlayerDirection.LEFT) {
                 int nextPosition = playerCell.getPosition() - 1;
                 replaceCells(nextPosition);
-            } else if (playerCell.getDirection() == Direction.DOWN) {
+            } else if (playerCell.getDirection() == PlayerDirection.DOWN) {
                 int nextPosition = playerCell.getPosition() + board.getCols();
                 replaceCells(nextPosition);
-            } else if (playerCell.getDirection() == Direction.UP) {
+            } else if (playerCell.getDirection() == PlayerDirection.UP) {
                 int nextPosition = playerCell.getPosition() - board.getCols();
                 replaceCells(nextPosition);
             }

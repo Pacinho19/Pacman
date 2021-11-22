@@ -1,9 +1,10 @@
 package pl.pacinho.pacman.model;
 
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-public enum Direction {
+public enum PlayerDirection {
 
     NONE(-1),
     UP(KeyEvent.VK_UP),
@@ -11,18 +12,18 @@ public enum Direction {
     LEFT(KeyEvent.VK_LEFT),
     RIGHT(KeyEvent.VK_RIGHT);
 
-
     private int keyEvent;
 
-    Direction(int keyEvent) {
+    PlayerDirection(int keyEvent) {
         this.keyEvent = keyEvent;
     }
 
-    public static Direction findByKey(KeyEvent e) {
+    public static PlayerDirection findByKey(KeyEvent e) {
         return Arrays.asList(values())
                 .stream()
                 .filter(d -> d.keyEvent == e.getKeyCode())
                 .findFirst()
                 .orElse(NONE);
     }
+
 }

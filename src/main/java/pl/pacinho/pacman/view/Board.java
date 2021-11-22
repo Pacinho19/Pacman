@@ -4,10 +4,6 @@ import javafx.util.Pair;
 import lombok.Getter;
 import pl.pacinho.pacman.controller.BoardController;
 import pl.pacinho.pacman.logic.Levels;
-import pl.pacinho.pacman.model.Direction;
-import pl.pacinho.pacman.view.cells.Cell;
-import pl.pacinho.pacman.view.cells.EmptyCell;
-import pl.pacinho.pacman.view.cells.WallCell;
 
 import javax.swing.*;
 import java.awt.*;
