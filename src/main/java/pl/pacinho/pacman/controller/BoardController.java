@@ -36,7 +36,8 @@ public class BoardController {
 
     private List<MonsterCell> monsters;
 
-    private int bonusDelay = 10;
+    private int bonusDelay = 30;
+    private int bonusTime = 20;
 
     private int bonusTick = 0;
     private int tickWithoutBonus = 0;
@@ -94,8 +95,10 @@ public class BoardController {
     }
 
     public void gameTick() {
-        moveMonsters();
-        refresh();
+        if(!bonusUse) {
+            moveMonsters();
+            refresh();
+        }
 
         if (end) {
             return;
@@ -126,14 +129,12 @@ public class BoardController {
         }
 
         if (bonusUse) {
-            System.out.println("BONUS START");
             bonusTick++;
-            if (bonusTick >= 10) {
+            if (bonusTick >= bonusTime) {
                 bonusTick=0;
                 bonus = false;
                 bonusUse = false;
                 tickWithoutBonus=0;
-                System.out.println("BONUS END");
             }
         }
     }
