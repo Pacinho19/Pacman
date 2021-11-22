@@ -5,9 +5,10 @@ import pl.pacinho.pacman.model.CellType;
 import javax.swing.*;
 import java.awt.*;
 
-public class PointCell extends Cell {
+public class ExtraPointCell extends PointCell {
 
-    public PointCell() {
+    public ExtraPointCell(int idx) {
+        this.idx=idx;
         this.cellType = CellType.POINT;
         init();
     }
@@ -20,12 +21,12 @@ public class PointCell extends Cell {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        int oHeight = (int) (getHeight() * 0.1);
-        int oWidth = (int) (getWidth() * 0.1);
+        int oHeight = (int) (getHeight() * 0.2);
+        int oWidth = (int) (getWidth() * 0.2);
         int x = (getHeight() - oHeight) / 2;
         int y = (getWidth() - oWidth) / 2;
-        g.setColor(Color.PINK);
-        g.fillRect(x, y, oHeight, oWidth);
+        g.setColor(Color.green);
+        g.fillOval(x, y, oHeight, oWidth);
     }
 
 

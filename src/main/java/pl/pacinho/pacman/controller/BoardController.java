@@ -36,6 +36,14 @@ public class BoardController {
 
     private List<MonsterCell> monsters;
 
+    private int bonusDelay = 10;
+
+    private int bonusTick = 0;
+    private int tickWithoutBonus = 0;
+
+    private boolean bonus = false;
+    private boolean bonusUse = false;
+
     public BoardController(Board board) {
         this.board = board;
         boardPanel = board.getBoardPanel();
@@ -89,7 +97,7 @@ public class BoardController {
         moveMonsters();
         refresh();
 
-        if(end){
+        if (end) {
             return;
         }
 
@@ -108,12 +116,48 @@ public class BoardController {
             int nextPosition = playerCell.getPosition() - board.getCols();
             replaceCells(nextPosition);
         }
+
+        if (!bonus) {
+            tickWithoutBonus++;
+            if (tickWithoutBonus >= bonusDelay) {
+                addBonus();
+                bonus = true;
+            }
+        }
+
+        if (bonusUse) {
+            System.out.println("BONUS START");
+            bonusTick++;
+            if (bonusTick >= 10) {
+                bonusTick=0;
+                bonus = false;
+                bonusUse = false;
+                tickWithoutBonus=0;
+                System.out.println("BONUS END");
+            }
+        }
+    }
+
+    private void addBonus() {
+        List<Cell> pointCell = Arrays.stream(boardPanel.getComponents())
+                .map(c -> (Cell) c)
+                .filter(c -> c.getCellType() == CellType.EMPTY)
+                .collect(Collectors.toList());
+
+        int extraPointIdx = RandomUtils.getInt(0, pointCell.size() - 1);
+
+        Cell cell = (pointCell.get(extraPointIdx));
+        boardPanel.remove(cell.getIdx());
+        boardPanel.add(new ExtraPointCell(cell.getIdx()), cell.getIdx());
+        pointsMap.add(cell);
+
+        refresh();
     }
 
     private void moveMonsters() {
         for (MonsterCell monsterCell : monsters) {
             goMove(monsterCell);
-            if(end){
+            if (end) {
                 return;
             }
         }
@@ -164,7 +208,7 @@ public class BoardController {
 
             board.getTimer().stop();
             JOptionPane.showMessageDialog(board, "Game Over2 !");
-            end= true;
+            end = true;
 
             return;
         }
@@ -172,7 +216,6 @@ public class BoardController {
         boardPanel.remove(nextPosition);
         boardPanel.add(monsterCell, nextPosition);
         monsterCell.setIdx(nextPosition);
-
     }
 
     private void replaceCells(int nextPosition) {
@@ -194,7 +237,7 @@ public class BoardController {
             board.getTimer().stop();
 
             JOptionPane.showMessageDialog(board, "Game Over1 !");
-            end= true;
+            end = true;
 
             return;
         }
@@ -227,7 +270,10 @@ public class BoardController {
                 setRandomFinishCell();
                 finishCell = true;
             }
+        }
 
+        if(nextCell instanceof  ExtraPointCell){
+            bonusUse = true;
         }
     }
 
