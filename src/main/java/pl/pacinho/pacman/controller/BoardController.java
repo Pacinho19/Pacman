@@ -74,17 +74,23 @@ public class BoardController {
         for (int i = 0; i < monsterCount; i++) {
             locateMonster();
         }
+        monsters.forEach(m -> m.setMonsterDirection(MonsterDirection.RIGHT));
     }
 
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            board.getTimer().start();
-            monsters.forEach(m -> m.setMonsterDirection(MonsterDirection.RIGHT));
+            if (!board.getTimer().isRunning()) {
+                board.getTimer().start();
+            } else {
+                board.getTimer().stop();
+            }
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT
                 || e.getKeyCode() == KeyEvent.VK_LEFT
                 || e.getKeyCode() == KeyEvent.VK_UP
                 || e.getKeyCode() == KeyEvent.VK_DOWN) {
             playerCell.setDirection(PlayerDirection.findByKey(e));
+        } else if (e.getKeyCode() == KeyEvent.VK_R) {
+            restart();
         }
     }
 
@@ -116,6 +122,7 @@ public class BoardController {
             replaceCells(nextPosition);
         }
 
+        refresh();
     }
 
     private void checkBonus() {
@@ -137,7 +144,8 @@ public class BoardController {
 
     private void addBonus() {
 
-        BonusType bt = BonusType.findById( RandomUtils.getInt(0, 2));
+//        BonusType bt = BonusType.findById( RandomUtils.getInt(0, 2));
+        BonusType bt = BonusType.MONSTER_KILL;
 
         List<Cell> pointCell = Arrays.stream(boardPanel.getComponents())
                 .map(c -> (Cell) c)
@@ -165,18 +173,25 @@ public class BoardController {
     }
 
     private void moveMonsters() {
+        MonsterCell monsterCell1=null;
         for (MonsterCell monsterCell : monsters) {
-            goMove(monsterCell);
+             monsterCell1 = goMove(monsterCell);
+            if(monsterCell1!=null){
+                break;
+            }
             if (end) {
                 return;
             }
         }
+        if(monsterCell1!=null){
+            monsters.remove(monsterCell1);
+        }
     }
 
-    private void goMove(MonsterCell monsterCell) {
+    private MonsterCell goMove(MonsterCell monsterCell) {
         int nextPosition = 0;
         if (monsterCell.getMonsterDirection() == MonsterDirection.NONE) {
-            return;
+            return null;
         } else if (monsterCell.getMonsterDirection() == MonsterDirection.RIGHT) {
             nextPosition = monsterCell.getIdx() + 1;
         } else if (monsterCell.getMonsterDirection() == MonsterDirection.LEFT) {
@@ -190,14 +205,14 @@ public class BoardController {
         if (wallList.contains(nextPosition)) {
             MonsterDirection direction = RandomUtils.getMonsterDirection();
             monsterCell.setMonsterDirection(direction);
-            return;
+            return null;
         }
 
         Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
         if (nextCell instanceof MonsterCell) {
             MonsterDirection direction = RandomUtils.getMonsterDirection();
             monsterCell.setMonsterDirection(direction);
-            return;
+            return null;
         }
         boardPanel.remove(monsterCell.getIdx());
         if (bonus.isActive() && monsterCell.getIdx() == bonus.getCell().getIdx()) {
@@ -212,7 +227,9 @@ public class BoardController {
             boardPanel.add(new EmptyCell(monsterCell.getIdx()), monsterCell.getIdx());
         }
 
-        if (nextCell instanceof PlayerCell) {
+        if (nextCell instanceof PlayerCell
+                && (!bonus.isInUse()
+                || (bonus.getBonusType() != BonusType.MONSTER_KILL))) {
 
             int position = playerCell.getIdx();
             boardPanel.remove(position);
@@ -224,12 +241,28 @@ public class BoardController {
             JOptionPane.showMessageDialog(board, "Game Over2 !");
             end = true;
 
-            return;
+            return null;
+        } else if (bonus.isInUse() && bonus.getBonusType() == BonusType.MONSTER_KILL && nextCell instanceof PlayerCell) {
+            boardPanel.remove(nextPosition);
+            if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(nextPosition)) {
+                PointCell pointCell = new PointCell();
+                pointCell.setIdx(nextPosition);
+                boardPanel.add(pointCell, nextPosition);
+            } else {
+                boardPanel.add(new EmptyCell(nextPosition), nextPosition);
+            }
+            boardPanel.remove(playerCell.getIdx());
+            boardPanel.add(playerCell, playerCell.getIdx());
+
+            monsters.remove(monsterCell);
+            return monsterCell;
         }
 
         boardPanel.remove(nextPosition);
         boardPanel.add(monsterCell, nextPosition);
         monsterCell.setIdx(nextPosition);
+
+        return null;
     }
 
     private void replaceCells(int nextPosition) {
@@ -255,18 +288,19 @@ public class BoardController {
             JOptionPane.showMessageDialog(board, "Game Over1 !");
             end = true;
             return;
-        }else if(bonus.isInUse() && bonus.getBonusType()==BonusType.MONSTER_KILL && nextCell instanceof MonsterCell){
+        } else if (bonus.isInUse() && bonus.getBonusType() == BonusType.MONSTER_KILL && nextCell instanceof MonsterCell) {
             boardPanel.remove(nextPosition);
             if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(nextPosition)) {
                 PointCell pointCell = new PointCell();
                 pointCell.setIdx(nextPosition);
-                boardPanel.add(pointCell,nextPosition);
-            }  else {
+                boardPanel.add(pointCell, nextPosition);
+            } else {
                 boardPanel.add(new EmptyCell(nextPosition), nextPosition);
             }
             boardPanel.remove(playerCell.getIdx());
             boardPanel.add(playerCell, playerCell.getIdx());
-            playerCell.setIdx(nextPosition);
+
+            monsters.remove((MonsterCell) nextCell);
             return;
         }
 
@@ -310,10 +344,10 @@ public class BoardController {
             }
         }
 
-        if (nextCell instanceof ExtraPointCell || nextCell instanceof  MonsterKillerCell) {
+        if (nextCell instanceof ExtraPointCell || nextCell instanceof MonsterKillerCell) {
             bonus.setInUse(true);
 
-            if(nextCell instanceof  MonsterKillerCell){
+            if (nextCell instanceof MonsterKillerCell) {
                 playerCell.setMonsterKillBonusBorder();
             }
         }
@@ -349,6 +383,12 @@ public class BoardController {
         boardPanel.add(monsterCell, cell.getIdx());
         monsters.add(monsterCell);
     }
+
+    public void restart() {
+        board.dispose();
+        new Board(board.getLevel()).setVisible(true);
+    }
+
 
     private void refresh() {
         board.repaint();

@@ -25,15 +25,13 @@ public class Board extends JFrame implements ActionListener {
 
     @Getter
     private JPanel boardPanel;
+    private JButton restartJB;
 
     @Getter
     private int level;
 
     @Getter
     private Timer timer;
-
-    @Getter
-    private Timer timer2;
 
     private Board self;
 
@@ -48,12 +46,11 @@ public class Board extends JFrame implements ActionListener {
 
         this.setTitle("Pacman");
         this.setSize(900, 900);
-//        this.setExtendedState( this.getExtendedState()|JFrame.MAXIMIZED_BOTH );
+
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        timer = new Timer(150, this);
-        timer2 = new Timer(250, this);
+        timer = new Timer(180, this);
         initLevelProperties();
         initComponents();
         initView();
@@ -75,6 +72,8 @@ public class Board extends JFrame implements ActionListener {
     private void initComponents() {
         boardPanel = new JPanel(new GridLayout(rows, cols));
         boardPanel.setDoubleBuffered(true);
+
+        restartJB = new JButton("Rester");
     }
 
     private void initView() {
@@ -82,6 +81,7 @@ public class Board extends JFrame implements ActionListener {
         main.setLayout(new BorderLayout());
 
         main.add(boardPanel, BorderLayout.CENTER);
+        main.add(restartJB, BorderLayout.NORTH);
     }
 
     private void initActions() {
@@ -93,6 +93,10 @@ public class Board extends JFrame implements ActionListener {
                 boardController.keyPressed(e);
             }
         });
+        restartJB.addActionListener((e -> {
+            boardController.restart();
+        }
+        ));
     }
 
     @Override
