@@ -1,5 +1,6 @@
 package pl.pacinho.pacman.controller;
 
+import pl.pacinho.pacman.config.GameProperties;
 import pl.pacinho.pacman.logic.Levels;
 import pl.pacinho.pacman.logic.Point;
 import pl.pacinho.pacman.model.*;
@@ -33,18 +34,19 @@ public class BoardController {
 
     private List<Point> pointsMap;
 
-    private int monsterCount = 0;
-
+    private int monsterCount;
     private List<MonsterCell> monsters;
 
     private Bonus bonus;
     private int firstBonusDelay = 20;
     private int gameTicks = 0;
 
-    private int life = 3;
+    private int life;
 
     public BoardController(Board board) {
         this.board = board;
+        this.life=board.getLife();
+
         boardPanel = board.getBoardPanel();
 
         wallList = new ArrayList<>();
@@ -107,7 +109,7 @@ public class BoardController {
                 || e.getKeyCode() == KeyEvent.VK_DOWN) {
             playerCell.setDirection(PlayerDirection.findByKey(e));
         } else if (e.getKeyCode() == KeyEvent.VK_R) {
-            restart();
+            restart(GameProperties.getMaxLife());
         }
     }
 
@@ -174,7 +176,6 @@ public class BoardController {
 
     private void addBonus() {
         BonusType bt = BonusType.findById(RandomUtils.getInt(0, 2));
-//        BonusType bt = BonusType.MONSTER_KILL;
 
         List<Cell> pointCell = Arrays.stream(boardPanel.getComponents())
                 .map(c -> (Cell) c)
@@ -342,7 +343,7 @@ public class BoardController {
             playerCell.setDirection(PlayerDirection.NONE);
             JOptionPane.showMessageDialog(board, "Level finish !");
             board.dispose();
-            new Board(board.getLevel() + 1).setVisible(true);
+            new Board(board.getLevel() + 1, life).setVisible(true);
         }
     }
 
@@ -407,9 +408,9 @@ public class BoardController {
         monsters.add(monsterCell);
     }
 
-    public void restart() {
+    public void restart(int life) {
         board.dispose();
-        new Board(board.getLevel()).setVisible(true);
+        new Board(0, life).setVisible(true);
     }
 
     private void refresh() {

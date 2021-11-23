@@ -1,8 +1,8 @@
 package pl.pacinho.pacman.view;
 
-import javafx.scene.shape.Box;
 import javafx.util.Pair;
 import lombok.Getter;
+import pl.pacinho.pacman.config.GameProperties;
 import pl.pacinho.pacman.controller.BoardController;
 import pl.pacinho.pacman.logic.Levels;
 import pl.pacinho.pacman.model.LevelData;
@@ -25,11 +25,26 @@ public class Board extends JFrame implements ActionListener {
     @Getter
     private int level;
     @Getter
+    private int life;
+    @Getter
     private Timer timer;
     private BoardController boardController;
+    @Getter
+    private JPanel boardPanel;
+    private JButton restartJB;
+    private JPanel topPanel;
+    @Getter
+    private JPanel lifePanel;
+    private JLabel lifeJL;
+    @Getter
+    private JLabel pointsJL;
+    @Getter
+    private JLabel bonusTimeJL;
+    private Board self;
 
-    public Board(int level) {
+    public Board(int level, int life) {
         this.level = level;
+        this.life = life;
         this.self = this;
 
         this.setTitle("Pacman");
@@ -48,9 +63,8 @@ public class Board extends JFrame implements ActionListener {
         boardController.initLevelView();
     }
 
-
     private void initLevelProperties() {
-        if(level>Levels.getLevelsMap().size()-1){
+        if (level > Levels.getLevelsMap().size() - 1) {
             JOptionPane.showMessageDialog(self, "No more levels ! Develop in progress..");
             System.exit(0);
         }
@@ -110,7 +124,7 @@ public class Board extends JFrame implements ActionListener {
             }
         });
         restartJB.addActionListener((e -> {
-            boardController.restart();
+            boardController.restart(GameProperties.getMaxLife());
         }
         ));
     }
@@ -119,17 +133,4 @@ public class Board extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         boardController.gameTick();
     }
-
-    @Getter
-    private JPanel boardPanel;
-    private JButton restartJB;
-    private JPanel topPanel;
-    @Getter
-    private JPanel lifePanel;
-    private JLabel lifeJL;
-    @Getter
-    private JLabel pointsJL;
-    @Getter
-    private JLabel bonusTimeJL;
-    private Board self;
 }
