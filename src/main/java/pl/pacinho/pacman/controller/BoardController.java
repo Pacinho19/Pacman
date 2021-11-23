@@ -37,6 +37,8 @@ public class BoardController {
     private List<MonsterCell> monsters;
 
     private Bonus bonus;
+    private int firstBonusDelay = 20;
+    private int gameTicks = 0;
 
     private int life = 3;
 
@@ -137,9 +139,13 @@ public class BoardController {
         }
 
         refresh();
+        gameTicks++;
     }
 
     private void checkBonus() {
+        if (gameTicks <= firstBonusDelay) {
+            return;
+        }
         if (!bonus.isActive()) {
             bonus.incrementTickWithoutBonus();
             if (bonus.getTickWithoutBonus() >= bonus.getBonusDelay()) {
@@ -171,8 +177,7 @@ public class BoardController {
 
         List<Cell> pointCell = Arrays.stream(boardPanel.getComponents())
                 .map(c -> (Cell) c)
-                .filter(c -> c.getCellType() == CellType.POINT
-                        || c.getCellType() == CellType.EMPTY)
+                .filter(c -> c.getCellType() == CellType.EMPTY)
                 .collect(Collectors.toList());
 
         int extraPointIdx = RandomUtils.getInt(0, pointCell.size() - 1);
@@ -264,15 +269,7 @@ public class BoardController {
             return null;
         } else if (bonus.isInUse() && bonus.getBonusType() == BonusType.MONSTER_KILL && nextCell instanceof PlayerCell) {
             boardPanel.remove(nextPosition);
-            if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(nextPosition)) {
-                PointCell pointCell = new PointCell();
-                pointCell.setIdx(nextPosition);
-                boardPanel.add(pointCell, nextPosition);
-                point++;
-                setPointInfo();
-            } else {
-                boardPanel.add(new EmptyCell(nextPosition), nextPosition);
-            }
+            boardPanel.add(new EmptyCell(nextPosition), nextPosition);
             boardPanel.remove(playerCell.getIdx());
             boardPanel.add(playerCell, playerCell.getIdx());
 
@@ -325,15 +322,7 @@ public class BoardController {
             return;
         } else if (bonus.isInUse() && bonus.getBonusType() == BonusType.MONSTER_KILL && nextCell instanceof MonsterCell) {
             boardPanel.remove(nextPosition);
-            if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(nextPosition)) {
-                PointCell pointCell = new PointCell();
-                pointCell.setIdx(nextPosition);
-                boardPanel.add(pointCell, nextPosition);
-                point++;
-                setPointInfo();
-            } else {
-                boardPanel.add(new EmptyCell(nextPosition), nextPosition);
-            }
+            boardPanel.add(new EmptyCell(nextPosition), nextPosition);
             boardPanel.remove(playerCell.getIdx());
             boardPanel.add(playerCell, playerCell.getIdx());
 
