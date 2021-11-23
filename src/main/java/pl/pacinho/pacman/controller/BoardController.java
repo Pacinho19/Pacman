@@ -1,6 +1,7 @@
 package pl.pacinho.pacman.controller;
 
 import pl.pacinho.pacman.logic.Levels;
+import pl.pacinho.pacman.logic.Point;
 import pl.pacinho.pacman.model.*;
 import pl.pacinho.pacman.utils.RandomUtils;
 import pl.pacinho.pacman.view.Board;
@@ -30,7 +31,7 @@ public class BoardController {
     private boolean finishCell = false;
     private int finishCellIdx = 0;
 
-    private List<Cell> pointsMap;
+    private List<Point> pointsMap;
 
     private int monsterCount = 0;
 
@@ -80,7 +81,7 @@ public class BoardController {
                     wallList.add(idx);
                 } else if (cellInstance instanceof PointCell) {
                     maxPoint++;
-                    pointsMap.add(cellInstance);
+                    pointsMap.add(new Point(idx));
                 }
                 idx++;
             }
@@ -244,7 +245,7 @@ public class BoardController {
         boardPanel.remove(monsterCell.getIdx());
         if (bonus.isActive() && monsterCell.getIdx() == bonus.getCell().getIdx()) {
             boardPanel.add(bonus.getCell(), monsterCell.getIdx());
-        } else if (pointsMap.stream().map(p -> p.getIdx()).collect(Collectors.toList()).contains(monsterCell.getIdx())) {
+        } else if (pointsMap.stream().map(Point::getIdx).collect(Collectors.toList()).contains(monsterCell.getIdx())) {
             PointCell pointCell = new PointCell();
             pointCell.setIdx(monsterCell.getIdx());
             boardPanel.add(pointCell, monsterCell.getIdx());
@@ -346,34 +347,26 @@ public class BoardController {
     }
 
     private void checkPoint(int nextPosition) {
-        Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
-        if (nextCell instanceof PointCell) {
-            boolean calcPoint = true;
-            if (nextCell instanceof ExtraPointCell) {
-                ExtraPointCell extraPointCell = (ExtraPointCell) nextCell;
-                calcPoint = extraPointCell.isDefaultPoint();
-            }
+        Point point = pointsMap.stream()
+                .filter(p -> p.getIdx() == nextPosition)
+                .findFirst()
+                .orElse(null);
 
-            if (calcPoint) {
-                point++;
-                setPointInfo();
-                Cell cell = pointsMap.stream()
-                        .filter(pm -> pm.getIdx() == nextCell.getIdx())
-                        .findFirst()
-                        .get();
-                pointsMap.remove(cell);
-
-                if (point == maxPoint
-                        && !finishCell) {
-                    setRandomFinishCell();
-                    finishCell = true;
-                }
-            }
+        if (point != null) {
+            this.point++;
+            setPointInfo();
+            pointsMap.remove(point);
         }
 
+        if (this.point == maxPoint
+                && !finishCell) {
+            setRandomFinishCell();
+            finishCell = true;
+        }
+
+        Cell nextCell = (Cell) boardPanel.getComponents()[nextPosition];
         if (nextCell instanceof ExtraPointCell || nextCell instanceof MonsterKillerCell) {
             bonus.setInUse(true);
-
             if (nextCell instanceof MonsterKillerCell) {
                 playerCell.setMonsterKillBonusBorder();
             }
